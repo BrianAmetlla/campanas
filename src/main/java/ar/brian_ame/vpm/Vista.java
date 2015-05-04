@@ -3,6 +3,7 @@ package ar.brian_ame.vpm;
 import ar.brian_ame.vpm.*;
 import ar.brian_ame.vpm.TestUtils.*;
 
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -63,24 +64,29 @@ public class Vista extends JFrame
 	private JLabel llegada_arteL, ok_prueba_colorL, segunda_entregaL, inicio_instalacionL, fin_instalacionL;
 	private JLabel envio_cierreL, fecha_optima_pcL, fecha_optima_ocL, fecha_optima_entregaL;
 	private JLabel fecha_optima_inicioL, fecha_optima_finL;
-	private JButton actualizarCampaña, exitB, verRetrasos, expoAexcelB;
+	private JButton actualizarCampaña, exitB, verRetrasos, expoAexcelB, nuevaCB, importarExcelB;
     
 	private GridBagConstraints lastConstraints = null;
     private GridBagConstraints middleConstraints = null;
     private GridBagConstraints labelConstraints = null;
-    
+
     //Button handlers:
     private VerRetrasos vRetrasoHandler;
+    private CrearNuevaCampañaButtonHandler nuevaCHandler;
 	private ActualizarButtonHandler abHandler;
 	private ExitButtonHandler ebHandler;
+	private ImportarExcelbuttonHandler importarExcelHandler;  
 	private ExpoAexcelbuttonHandler expoAexcelHandler;
 	private SelectCampañaHandler selectCampañahandler;
 	private JComboBox<Campañas> allCampañasB;
 	
 	//inicializo variables y objetos que voy a user
-	Campañas campa = new Campañas();
-	ArrayList<String> lista_campañas = new ArrayList<String>();
+	Campañas campa ;
+	//ArrayList<String> lista_campañas = new ArrayList<String>();
 	ArrayList<ArrayList<String>> todasLasCampañas = new ArrayList<ArrayList<String>> ();
+	ArrayList<ArrayList<String>> campañasImportadas = new ArrayList<ArrayList<String>> ();
+	ArrayList<String> estado_viejo = new ArrayList<String>();
+	int estado_viejo_index = -1 ;
 
 	
 public Vista()
@@ -91,101 +97,182 @@ public Vista()
 private class ActualizarButtonHandler implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
-		{   
+		
 
-			muestroOptimos();
-			//calculo las fechas y relleno los campos
-			calcularFechas();
-			
-			allCampañasB.addItem(campa);
-			
-			todasLasCampañas.add(guardar_estado());
-			campa = new Campañas();
+		{   	//tengo q remover el estado viejo de la lista de campañas y agregar el nevo
+				// recorro la lista, y busco el nombre de la campaña
+				// cuando lo encuentra saco la posicicon en la lista para removerlo despues
+			if (jbotonTiene(allCampañasB, campa)){
+				//vuelvo a llenar los campos con los datos del nuevo objeto
+				calcularFechas();
+				//remuevo de la lista el estado viejo
+				todasLasCampañas.remove(estado_viejo);
+				//agrego la info actualizada del objeto a la lista
+				todasLasCampañas.add(guardar_estado());
 
-		}
-	}
-	
-public class ExitButtonHandler implements ActionListener
-	{
-		public void actionPerformed(ActionEvent e)
-		{
-			System.exit(0);
-		}
-	}
-	
-public class VerRetrasos implements ActionListener
-	{
-	public void actionPerformed(ActionEvent e)
-		{
-			//escondo los optimos
-			fechaOptimaArteL.setVisible(false);
-			fechaOptimaArteTF.setVisible(false);
-			fecha_optima_pcL.setVisible(false);
-			fecha_optima_pcTF.setVisible(false);
-			fecha_optima_ocL.setVisible(false);
-			fecha_optima_ocTF.setVisible(false);
-			fecha_optima_entregaL.setVisible(false);
-			fecha_optima_entregaTF.setVisible(false);
-			fecha_optima_inicioL.setVisible(false);
-			fecha_optima_inicioTF.setVisible(false);
-			fecha_optima_finL.setVisible(false);
-			fecha_optima_finTF.setVisible(false);
-			
-			//muestro los retrasos
-			retraso_llegada_arteL.setVisible(true);
-			retraso_llegada_arteTF.setVisible(true);
-			retraso_pedido_pruebaL.setVisible(true);
-			retraso_pedido_pruebaTF.setVisible(true);
-			retraso_ok_colorL.setVisible(true);
-			retraso_ok_colorTF.setVisible(true);
-			retraso_aprobacion_ocL.setVisible(true);
-			retraso_aprobacion_ocTF.setVisible(true);
-			retraso_orden_compraL.setVisible(true);
-			retraso_orden_compraTF.setVisible(true);
-			retraso_primer_entregaL.setVisible(true);
-			retraso_primer_entregaTF.setVisible(true);
-			retraso_segunda_entregaL.setVisible(true);
-			retraso_segunda_entregaTF.setVisible(true);	
-			retraso_inicio_colocacionL.setVisible(true);
-			retraso_inicio_colocacionTF.setVisible(true);
-			retraso_fin_colocacionL.setVisible(true);
-			retraso_fin_colocacionTF.setVisible(true);
-			retraso_fin_cierreL.setVisible(true);
-			retraso_fin_cierreTF.setVisible(true);
+			}
+			else
+			{
+				//no existe lo grabo x primera vez
+				calcularFechas();
+				allCampañasB.addItem(campa);
+				//agrego la info actualizada del objeto a la lista
+				todasLasCampañas.add(guardar_estado());
 				
+			}
+			allCampañasB.setSelectedIndex(-1);
+			bloquearTextos();
+			
 		}
-		
-		
+	}
+
+private class CrearNuevaCampañaButtonHandler implements ActionListener
+{
+	public void actionPerformed(ActionEvent e)
+	{   
+		allCampañasB.setSelectedIndex(-1);
+		campa = new Campañas();
+		inicializar();
+		estado_viejo = guardar_estado();
+		desbloquearTextos();
+	}
+}
+
+
+public boolean jbotonTiene(JComboBox<Campañas> boton,Campañas c)
+{
+	int size = boton.getItemCount();
+	boolean a;
+	for (int i = 0; i< size; i++)
+	{
+	Campañas c2 = boton.getItemAt(i);
+		if(c.equals(c2))
+		{return true;
+		}
+	}
+	return false;
+
 }
 	
 public class SelectCampañaHandler implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
 		{
-			Campañas campa = (Campañas) allCampañasB.getSelectedItem();
+			if (allCampañasB.getSelectedIndex()>-1){
+			campa = (Campañas) allCampañasB.getSelectedItem();
 			dameCampa(campa);
-			calcularFechas();
+			estado_viejo = guardar_estado();
+			desbloquearTextos();
+			campañaTF.setEditable(false);
+			}
 		}
 	}
 	
-public class ExpoAexcelbuttonHandler implements ActionListener
-	{
-		public void actionPerformed(ActionEvent e)
-		{
-			Iterator<ArrayList<String>> it = todasLasCampañas.iterator();
 
-		    while(it.hasNext())
-		        {
-		        Iterator<String> itr = it.next().iterator();
-		       
-		         System.out.println(itr.next());
-		       
-		        }
-		    
-			  WriteExcel.main(todasLasCampañas);
-			
-		}
+public void bloquearTextos() {
+	
+	campañaTF.setEditable(false);
+	formatoTF.setEditable(false);
+	fecha_inicioTF.setEditable(false);
+	fecha_inicioTF.setEditable(false);
+	llegada_arteTF.setEditable(false);
+	pedido_prueba_colorTF.setEditable(false);
+	ok_prueba_colorTF.setEditable(false);
+	llegada_ajustesTF.setEditable(false);
+	aprobacion_ocTF.setEditable(false);
+	envio_ocTF.setEditable(false);
+	primer_entregaTF.setEditable(false);
+	segunda_entregaTF.setEditable(false);
+	inicio_instalacionTF.setEditable(false);
+	fin_instalacionTF.setEditable(false);
+	envio_cierreTF.setEditable(false);
+
+}
+
+public void desbloquearTextos() {
+	
+	campañaTF.setEditable(true);
+	formatoTF.setEditable(true);
+	fecha_inicioTF.setEditable(true);
+	fecha_inicioTF.setEditable(true);
+	llegada_arteTF.setEditable(true);
+	pedido_prueba_colorTF.setEditable(true);
+	ok_prueba_colorTF.setEditable(true);
+	llegada_ajustesTF.setEditable(true);
+	aprobacion_ocTF.setEditable(true);
+	envio_ocTF.setEditable(true);
+	primer_entregaTF.setEditable(true);
+	segunda_entregaTF.setEditable(true);
+	inicio_instalacionTF.setEditable(true);
+	fin_instalacionTF.setEditable(true);
+	envio_cierreTF.setEditable(true);
+
+}
+
+public class ExpoAexcelbuttonHandler implements ActionListener
+{
+	public void actionPerformed(ActionEvent e)
+	{
+		//  muestra todas las campñanas que graba
+		Iterator<ArrayList<String>> it = todasLasCampañas.iterator();
+
+	    while(it.hasNext())
+	        {
+ 
+	         System.out.println(it.next());
+	       
+	        }
+	    
+		  WriteExcel.main(todasLasCampañas);
+		
 	}
+}
+
+
+public class ImportarExcelbuttonHandler implements ActionListener
+{
+	public void actionPerformed(ActionEvent e)
+	{
+	    String[] args = null;
+	    campañasImportadas = ReadExcel.main(args);
+	    todasLasCampañas = campañasImportadas;
+	    
+	    
+	    //creo un objeto por cada arraylist del arraylist(arraylis)
+	    for(ArrayList<String> c : todasLasCampañas )
+	    {
+	    	
+	    	String impor_nombre = c.get(0);
+	    	String impor_formato = c.get(1);
+	    	String impot_fecha_inicio =  c.get(2); 
+	    	String impor_llegada_arte = c.get(4);
+	    	String impor_pedido_prueba_color  = c.get(6);
+	    	String impor_ok_pruebacolo = c.get(7);
+	    	String impor_llegada_justes = c.get(8);
+	    	String impor_aprobacion_oc = c.get(10);
+	    	String impor_envio_oc = c.get(11);
+	    	String impor_primer_entrega = c.get(13);
+	    	String impor_segunda_entrega = c.get(14);
+	    	String impor_inicio_instalacion = c.get(16);
+	    	String impor_find_instalacion = c.get(18);
+	    	String impor_envio_cierre = c.get(19);
+	    	
+	   	   	 campa = new Campañas(impor_nombre, impor_formato, TestUtils.toDateWithTime(impot_fecha_inicio), 
+	   	   			TestUtils.toDateWithTime(impor_llegada_arte), TestUtils.toDateWithTime(impor_pedido_prueba_color), 
+	   	   			TestUtils.toDateWithTime(impor_ok_pruebacolo), 
+	   	   			TestUtils.toDateWithTime(impor_llegada_justes), TestUtils.toDateWithTime(impor_aprobacion_oc), 
+	   	   			TestUtils.toDateWithTime(impor_envio_oc), TestUtils.toDateWithTime(impor_primer_entrega), 
+	   	   			TestUtils.toDateWithTime(impor_segunda_entrega), TestUtils.toDateWithTime(impor_inicio_instalacion), 
+	   	   			TestUtils.toDateWithTime(impor_find_instalacion), 
+	   	   			TestUtils.toDateWithTime(impor_envio_cierre));
+	   	   	 
+	   	  allCampañasB.addItem(campa);
+	    
+	    }
+	    
+	}
+}
+
 
 public ArrayList<String>  guardar_estado() {
 	ArrayList<String> estado = new ArrayList<String>(Arrays.asList(
@@ -328,12 +415,26 @@ public void crearGUI() {
 		//exitB.setPreferredSize(new Dimension(null));
 		expoAexcelB.addActionListener(expoAexcelHandler);
 
+		
+		 importarExcelB = new JButton("Desde Excel");
+		 importarExcelHandler = new  ImportarExcelbuttonHandler();
+		 importarExcelB.addActionListener(importarExcelHandler);
+		
+		
+		nuevaCB = new JButton("Crear Campaña");
+	    //private CrearNuevaCampaña nuevaCHandler;
+		nuevaCHandler = new CrearNuevaCampañaButtonHandler();
+		nuevaCB.addActionListener(nuevaCHandler);
+
 
 		allCampañasB =  new JComboBox<Campañas>(); 
 		selectCampañahandler = new SelectCampañaHandler();
 		allCampañasB.addActionListener(selectCampañahandler);
-
 		
+		
+		
+		
+		bloquearTextos();
 		
 		
 		allCampañasB.setRenderer(new DefaultListCellRenderer() {
@@ -353,14 +454,6 @@ public void crearGUI() {
             }
         } );
        
-		
-		
-		
-		
-		
-		
-
-		
 		setTitle("Titulo:Calcular Fecha Optimas y retrasos");
 		Container pane = getContentPane();
 		pane.setLayout(new GridBagLayout());
@@ -474,16 +567,26 @@ public void crearGUI() {
 		c.gridx = 3;
 		c.gridy = 15;
 		pane.add(exitB,c);
+		c.gridx = 3;
+		c.gridy =14 ;
+		pane.add(nuevaCB, c);
+		
+		
 		c.gridx = 1;
 		c.gridy = 14;
 		pane.add(expoAexcelB,c);
+		
+		c.gridx = 0;
+		c.gridy = 14;
+		pane.add(importarExcelB,c);
+		
 		
 		
 		c.gridx = 1;
 		c.gridy = 15;
 		allCampañasB.setPreferredSize(new Dimension(20, 20));
 		pane.add(allCampañasB,c);
-
+		
 
         //agrego todos los TF de los inputs
 		c.weightx = 0.1;
@@ -671,6 +774,83 @@ public void crearGUI() {
 		setVisible(true);
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
+
+
+private void inicializar(){
+	campañaTF.setText("");
+	formatoTF.setText("");
+	fecha_inicioTF.setText("");
+	llegada_arteTF.setText("");
+	pedido_prueba_colorTF.setText("");
+	ok_prueba_colorTF.setText("");
+	llegada_ajustesTF.setText("");
+	aprobacion_ocTF.setText("");
+	envio_ocTF.setText("");
+	primer_entregaTF.setText("");
+	segunda_entregaTF.setText("");
+	inicio_instalacionTF.setText("");
+	fin_instalacionTF.setText("");
+	envio_cierreTF.setText("");
+	
+	
+}
+
+	
+public class ExitButtonHandler implements ActionListener
+	{
+		public void actionPerformed(ActionEvent e)
+		{
+			System.exit(0);
+		}
+	}
+	
+public class VerRetrasos implements ActionListener
+	{
+	public void actionPerformed(ActionEvent e)
+		{
+			//escondo los optimos
+			fechaOptimaArteL.setVisible(false);
+			fechaOptimaArteTF.setVisible(false);
+			fecha_optima_pcL.setVisible(false);
+			fecha_optima_pcTF.setVisible(false);
+			fecha_optima_ocL.setVisible(false);
+			fecha_optima_ocTF.setVisible(false);
+			fecha_optima_entregaL.setVisible(false);
+			fecha_optima_entregaTF.setVisible(false);
+			fecha_optima_inicioL.setVisible(false);
+			fecha_optima_inicioTF.setVisible(false);
+			fecha_optima_finL.setVisible(false);
+			fecha_optima_finTF.setVisible(false);
+			
+			//muestro los retrasos
+			retraso_llegada_arteL.setVisible(true);
+			retraso_llegada_arteTF.setVisible(true);
+			retraso_pedido_pruebaL.setVisible(true);
+			retraso_pedido_pruebaTF.setVisible(true);
+			retraso_ok_colorL.setVisible(true);
+			retraso_ok_colorTF.setVisible(true);
+			retraso_aprobacion_ocL.setVisible(true);
+			retraso_aprobacion_ocTF.setVisible(true);
+			retraso_orden_compraL.setVisible(true);
+			retraso_orden_compraTF.setVisible(true);
+			retraso_primer_entregaL.setVisible(true);
+			retraso_primer_entregaTF.setVisible(true);
+			retraso_segunda_entregaL.setVisible(true);
+			retraso_segunda_entregaTF.setVisible(true);	
+			retraso_inicio_colocacionL.setVisible(true);
+			retraso_inicio_colocacionTF.setVisible(true);
+			retraso_fin_colocacionL.setVisible(true);
+			retraso_fin_colocacionTF.setVisible(true);
+			retraso_fin_cierreL.setVisible(true);
+			retraso_fin_cierreTF.setVisible(true);
+				
+		}
+		
+		
+}
+
+
+//asigna al objeto campaña los datos de los TF
 public void calcularFechas() {
 		try {
 			String strDate = new SimpleDateFormat("dd/MM/yyyy").format(fecha_inicioTF.getValue());
@@ -782,7 +962,7 @@ public void calcularFechas() {
 			campa.setFin_instalacion(TestUtils.toDateWithTime(""));
 		}
 		try {
-		String strDate11 = new SimpleDateFormat("dd/MM/yyyy").format(fin_instalacionTF.getValue());
+		String strDate11 = new SimpleDateFormat("dd/MM/yyyy").format(envio_cierreTF.getValue());
 		campa.setEnvio_cierre(TestUtils.toDateWithTime(strDate11));
 		} 
 		catch (IllegalArgumentException a)
@@ -799,19 +979,30 @@ public void calcularFechas() {
 			campa.setAprobacion_oc(TestUtils.toDateWithTime(""));
 		}
 		
-		fechaOptimaArteTF.setText(TestUtils.fechaToString(campa.getFechaArteOptima()));
-		
-		
-		
-		fecha_optima_pcTF.setText(TestUtils.fechaToString(campa.getFechaPcOptima()));
-
 		try {	
+		fechaOptimaArteTF.setText(TestUtils.fechaToString(campa.getFechaArteOptima()));
+		}
+		catch (NullPointerException a)
+		{
+			fechaOptimaArteTF.setText("");
+		}
+		
+		try {	
+		fecha_optima_pcTF.setText(TestUtils.fechaToString(campa.getFechaPcOptima()));
+		}
+		catch (NullPointerException a)
+		{
+			fecha_optima_pcTF.setText("");
+		}
+
+		try {
 		fecha_optima_ocTF.setText(TestUtils.fechaToString(campa.getFechaOptimaOC()));
 		}
 		catch (NullPointerException a)
 		{
 			fecha_optima_ocTF.setText("");
 		}
+		
 		try {	
 		fecha_optima_entregaTF.setText(TestUtils.fechaToString(campa.getFechaOptimaEntrega()));
 		}
@@ -865,7 +1056,7 @@ public void calcularFechas() {
 		try {
 		retraso_ok_colorTF.setText(campa.retraso_okColor());
 		}					
-		catch (NullPointerException a)
+		catch (NullPointerException a1)
 		{
 			retraso_ok_colorTF.setText("");
 		}
@@ -874,15 +1065,15 @@ public void calcularFechas() {
 		try {
 			retraso_fin_cierreTF.setText(campa.retrasoEnvioCierre());
 		}
-		catch (NullPointerException a)
-		{
+		catch (NullPointerException a1)
+		{ 
 			retraso_fin_cierreTF.setText("");
 		}
 
 		try {
 		retraso_aprobacion_ocTF.setText(campa.retrasoAprobacionOC());
 		}
-				catch (NullPointerException a)
+				catch (NullPointerException a1)
 		{
 			retraso_aprobacion_ocTF.setText("");
 		}
@@ -893,7 +1084,7 @@ public void calcularFechas() {
 		{
 		retraso_pedido_pruebaTF.setText((campa.retrasoPedidoPrueba()));
 		}
-		catch (NullPointerException a)
+		catch (NullPointerException a1)
 		{
 			retraso_pedido_pruebaTF.setText("");
 		}
@@ -903,7 +1094,7 @@ public void calcularFechas() {
 		{
 			retraso_orden_compraTF.setText(campa.retrasoOrdenCompra());
 		}					
-		catch (NullPointerException a)
+		catch (NullPointerException a1)
 		{
 			retraso_orden_compraTF.setText("");
 		}
@@ -914,7 +1105,7 @@ public void calcularFechas() {
 
 		retraso_primer_entregaTF.setText(campa.retrasoPrimerEntrega());
 		}					
-		catch (NullPointerException a)
+		catch (NullPointerException a1)
 		{
 			retraso_primer_entregaTF.setText("");
 		}
@@ -922,7 +1113,7 @@ public void calcularFechas() {
 		try {
 			retraso_segunda_entregaTF.setText(campa.retrasoEntregaFinal());
 		}					
-		catch (NullPointerException a)
+		catch (NullPointerException a1)
 		{
 			retraso_segunda_entregaTF.setText("");
 		}
@@ -932,7 +1123,7 @@ public void calcularFechas() {
 		{
 			retraso_inicio_colocacionTF.setText(campa.retrasoInicioColocacion());
 		}					
-		catch (NullPointerException a)
+		catch (NullPointerException a11)
 		{
 			retraso_inicio_colocacionTF.setText("");
 		}
@@ -940,7 +1131,7 @@ public void calcularFechas() {
 		try {
 		retraso_fin_colocacionTF.setText(campa.retrasoFinColocacion());
 		}					
-		catch (NullPointerException a)
+		catch (NullPointerException a11)
 		{
 		retraso_fin_colocacionTF.setText("");
 		}
@@ -989,8 +1180,9 @@ public static void main(String[] args)
 	{
 		Vista rectObj = new Vista();
 	} 	
-	
 
+
+//asigna a los TF los datos del objeto campaña
 public void dameCampa(Campañas c)
 		{ 
 	campañaTF.setText(c.getNombre_campaña());
@@ -1011,3 +1203,6 @@ public void dameCampa(Campañas c)
 		}
 
 }
+
+
+

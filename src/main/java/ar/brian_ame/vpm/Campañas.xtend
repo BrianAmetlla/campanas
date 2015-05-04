@@ -68,6 +68,11 @@ class Campañas   {
 		this.llegada_ajustes = null
 		this.segunda_entrega = null
 	}
+	
+	
+
+
+
 
 	new (String nombre, String formato, Date fecha_inicio, Date llegada_arte, Date pedido_prueba_color, Date ok_prueba_color, 
 			Date llegada_ajustes, Date aprobacion_oc, Date envio_oc, Date primer_entrega, 
