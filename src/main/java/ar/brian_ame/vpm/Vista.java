@@ -1,6 +1,7 @@
 package ar.brian_ame.vpm;
 
 import ar.brian_ame.vpm.*;
+
 import ar.brian_ame.vpm.TestUtils.*;
 
 import javax.swing.ComboBoxModel;
@@ -53,7 +54,7 @@ public class Vista extends JFrame
 	private JFormattedTextField segunda_entregaTF, inicio_instalacionTF, fin_instalacionTF, envio_cierreTF;
 	private JFormattedTextField fecha_optima_pcTF, fecha_optima_ocTF, fecha_optima_entregaTF;
 	private JFormattedTextField fecha_optima_inicioTF, fecha_optima_finTF, fechaOptimaArteTF;
-	private JFormattedTextField arteTF, okRealTF, okIdealTF;
+	private JFormattedTextField arteTF, okRealTF, okIdealTF ;
    	
 	private JTextField retraso_llegada_arteTF, retraso_pedido_pruebaTF, retraso_ok_colorTF, retraso_aprobacion_ocTF, retraso_orden_compraTF, retraso_primer_entregaTF, retraso_segunda_entregaTF, retraso_inicio_colocacionTF, retraso_fin_colocacionTF, retraso_fin_cierreTF;
 	private JTextField campañaTF, formatoTF;
@@ -64,7 +65,7 @@ public class Vista extends JFrame
 	private JLabel llegada_arteL, ok_prueba_colorL, segunda_entregaL, inicio_instalacionL, fin_instalacionL;
 	private JLabel envio_cierreL, fecha_optima_pcL, fecha_optima_ocL, fecha_optima_entregaL;
 	private JLabel fecha_optima_inicioL, fecha_optima_finL;
-	private JButton actualizarCampaña, exitB, verRetrasos, expoAexcelB, nuevaCB, importarExcelB;
+	private JButton actualizarCampaña, exitB, verRetrasos, expoAexcelB, nuevaCB, importarExcelB, resumenB;
     
 	private GridBagConstraints lastConstraints = null;
     private GridBagConstraints middleConstraints = null;
@@ -79,6 +80,7 @@ public class Vista extends JFrame
 	private ExpoAexcelbuttonHandler expoAexcelHandler;
 	private SelectCampañaHandler selectCampañahandler;
 	private JComboBox<Campañas> allCampañasB;
+	private VerResumenHandler resumenHandler;
 	
 	//inicializo variables y objetos que voy a user
 	Campañas campa ;
@@ -98,8 +100,11 @@ private class ActualizarButtonHandler implements ActionListener
 	{
 		public void actionPerformed(ActionEvent e)
 		
+		
 
-		{   	//tengo q remover el estado viejo de la lista de campañas y agregar el nevo
+		{  
+			muestroOptimos();
+			//tengo q remover el estado viejo de la lista de campañas y agregar el nevo
 				// recorro la lista, y busco el nombre de la campaña
 				// cuando lo encuentra saco la posicicon en la lista para removerlo despues
 			if (jbotonTiene(allCampañasB, campa)){
@@ -169,6 +174,8 @@ public class SelectCampañaHandler implements ActionListener
 	}
 	
 
+
+
 public void bloquearTextos() {
 	
 	campañaTF.setEditable(false);
@@ -236,7 +243,7 @@ public class ImportarExcelbuttonHandler implements ActionListener
 	    String[] args = null;
 	    campañasImportadas = ReadExcel.main(args);
 	    todasLasCampañas = campañasImportadas;
-	    
+	    allCampañasB.removeAllItems();
 	    
 	    //creo un objeto por cada arraylist del arraylist(arraylis)
 	    for(ArrayList<String> c : todasLasCampañas )
@@ -432,6 +439,9 @@ public void crearGUI() {
 		allCampañasB.addActionListener(selectCampañahandler);
 		
 		
+		resumenB = new JButton("Ver Resumen");
+		resumenHandler = new VerResumenHandler();
+		resumenB.addActionListener(resumenHandler);
 		
 		
 		bloquearTextos();
@@ -586,6 +596,10 @@ public void crearGUI() {
 		c.gridy = 15;
 		allCampañasB.setPreferredSize(new Dimension(20, 20));
 		pane.add(allCampañasB,c);
+		
+		c.gridx = 0;
+		c.gridy = 15;
+		pane.add(resumenB,c);
 		
 
         //agrego todos los TF de los inputs
@@ -804,6 +818,17 @@ public class ExitButtonHandler implements ActionListener
 		}
 	}
 	
+
+public class VerResumenHandler implements ActionListener
+{
+	public void actionPerformed(ActionEvent e)
+	{
+		Resumen.main(dameArrayCampañas());
+	}
+}
+
+
+
 public class VerRetrasos implements ActionListener
 	{
 	public void actionPerformed(ActionEvent e)
@@ -1061,6 +1086,14 @@ public void calcularFechas() {
 			retraso_ok_colorTF.setText("");
 		}
 
+		try {
+		retraso_llegada_arteTF.setText(campa.retrasoLlegadaArte());
+		}					
+		catch (NullPointerException a1)
+		{
+			retraso_llegada_arteTF.setText("");
+		}
+
 		
 		try {
 			retraso_fin_cierreTF.setText(campa.retrasoEnvioCierre());
@@ -1202,6 +1235,19 @@ public void dameCampa(Campañas c)
 
 		}
 
+
+private  ArrayList<Campañas> dameArrayCampañas()
+{
+	int cantidadCampañas = allCampañasB.getItemCount();
+	ArrayList<Campañas> arrayCampañas = new ArrayList<Campañas>();
+	int i;
+	for (i=0; i<cantidadCampañas; i++)
+	{
+		arrayCampañas.add(allCampañasB.getItemAt(i));
+		
+	}
+	return arrayCampañas;
+}
 }
 
 

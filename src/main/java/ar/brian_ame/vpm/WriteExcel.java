@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -20,10 +22,11 @@ public class WriteExcel
 	public static void main(ArrayList<ArrayList<String>> Lista_Campañas) 
     {
     	   //Blank workbook
-		XSSFWorkbook workbook = new XSSFWorkbook(); 
+		//XSSFWorkbook workbook = new XSSFWorkbook(); 
+		HSSFWorkbook workbook = new HSSFWorkbook(); 
          
         //Create a blank sheet
-        XSSFSheet sheet = workbook.createSheet("Detalle de campañas");
+        HSSFSheet sheet = workbook.createSheet("Detalle de campañas");
         //Campañas campa2 = new Campañas("prueba", "2 charters", TestUtils.toDateWithTime("09/03/2015"), TestUtils.toDateWithTime("04/03/2015"), TestUtils.toDateWithTime("27/03/2015"), TestUtils.toDateWithTime("03/03/2015 16:00"), TestUtils.toDateWithTime(""), TestUtils.toDateWithTime("03/03/2015"), TestUtils.toDateWithTime("04/03/2015"), TestUtils.toDateWithTime("09/03/2015"), TestUtils.toDateWithTime(""), TestUtils.toDateWithTime("11/03/2015"), TestUtils.toDateWithTime("21/03/2015"), TestUtils.toDateWithTime(""));
         //This data needs to be written (Object[])
         ArrayList<String> titulo = new ArrayList<String>(Arrays.asList("Campaña", "Formato y cantidad", "Fecha de Inicio", "Fecha óptima (arte)", "Llegada Arte", "Fecha óptima (PC)", "Pedido prueba color", "OK Prueba Color", "Llegada Arte c/ajustes", "Fecha óptima (OC)", "Aprobación OC", "Envío OC", "Fecha óptima (entrega)", "1ra Entrega Proveedor", "2da Entrega Proveedor","Fecha óptima inicio", "Inicio Instalación", "Fecha óptima fin", "Fin Instalación", "Envío de cierre", "Llegada Arte", "Pedido de prueba", "OK Color", "Aprobación OC", "Orden de Compra", "1ra Entrega", "Entrega Final", "Inicio colocación", "Fin colocación", "Envío cierre", "ARTE", "OK Real", "OK Ideal"));
@@ -58,7 +61,7 @@ public class WriteExcel
         try
         {
             //Write the workbook in file system
-           FileOutputStream out = new FileOutputStream(new File("Campaña.xlsx"));
+           FileOutputStream out = new FileOutputStream(new File("Campaña.xls"));
            workbook.write(out);
            out.close();
            System.out.println("Se guardó el archivo Campaña.xlsx de forma exitosa.");

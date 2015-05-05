@@ -263,38 +263,40 @@ class Campañas   {
 	}
 
 	//fecha real del arte
-	def arte(){
-		if (llegada_arte != null){
+	def arte()
+	{
 		var Calendar c = Calendar.getInstance
-		if (this.llegada_arte != null) {
-		c.time = this.llegada_arte
-		if(this.llegada_ajustes != null )
-			{
-				c.time=this.llegada_ajustes
-				if(c.get(Calendar.HOUR_OF_DAY) >= 15)
-					{
-						c.add(Calendar.DATE,1)
-					}
-			}
-		else 
-			{
-				if(c.get(Calendar.HOUR_OF_DAY) >= 15)
+		if (this.llegada_arte != null) 
+		{
+			c.time = this.llegada_arte
+			if(this.llegada_ajustes != null )
 				{
-					c.add(Calendar.DATE,1)
+					c.time=this.llegada_ajustes
+					if(c.get(Calendar.HOUR_OF_DAY) >= 15)
+						{
+							c.add(Calendar.DATE,1)
+						}
 				}
-			}
-			
-		//Me fijo que el dia siguiente sea habil, de no ser asi, lo muevo hata el primer dia habil
-		while (!this.diaHabil(c.getTime))
-			{
-				c.add(Calendar.DATE,1)	
-			}	
-		return (c.getTime)
+			else 
+				{
+					if(c.get(Calendar.HOUR_OF_DAY) >= 15)
+						{
+							c.add(Calendar.DATE,1)
+						}
+				}
+			//Me fijo que el dia siguiente sea habil, de no ser asi, lo muevo hata el primer dia habil
+			while (!this.diaHabil(c.getTime))
+				{
+					c.add(Calendar.DATE,1)	
+				}	
+			return (c.getTime)
+		}
+		else 
+		{
+			return null
+		}
 	}
-	else {return null}
-	}
-	else {return null}
-	}
+
 
 	def okReal(){ 
 			var Calendar c = Calendar.getInstance();
@@ -435,11 +437,9 @@ def retrasoEntregaFinal(){
 	if(this.segunda_entrega != null )
 	{
 		retrasoAccion(this.getFechaOptimaEntrega(),this.segunda_entrega).toString
-		
-		 
 	}
 	else{	
-		return ""			
+		return 0.toString			
 	}
 }     
 

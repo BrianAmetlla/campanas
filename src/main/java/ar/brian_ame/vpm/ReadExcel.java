@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -19,14 +22,19 @@ public class ReadExcel {
     	
         try
         {
-            FileInputStream file = new FileInputStream(new File("Campaña.xlsx"));
-            
+            FileInputStream file = new FileInputStream(new File("Campaña.xls"));
+
             //Create Workbook instance holding reference to .xlsx file
-            XSSFWorkbook workbook = new XSSFWorkbook(file);
- 
-            //Get first/desired sheet from the workbook
-            XSSFSheet sheet = workbook.getSheetAt(0);
-            
+            //XSSFWorkbook  workbook  = new XSSFWorkbook(file);
+             //Get first/desired sheet from the workbook
+            //XSSFSheet  sheet = workbook.getSheetAt(0);
+
+           
+            //Create Workbook instance holding reference to .xls file
+            HSSFWorkbook  workbook  = new HSSFWorkbook(file);
+             //Get first/desired sheet from the workbook
+            HSSFSheet  sheet = workbook.getSheetAt(0);
+
 
             
  
@@ -44,7 +52,16 @@ public class ReadExcel {
                 while (cellIterator.hasNext())
                 {
                     Cell cell = cellIterator.next();
-                    campa.add(cell.getStringCellValue());
+	                	switch (cell.getCellType())
+	                	{
+						case Cell.CELL_TYPE_STRING:
+							//System.out.println(cell.getColumnIndex());
+	                    	campa.add(cell.getStringCellValue());
+	                    	break;
+						case Cell.CELL_TYPE_BLANK:
+							campa.add("");
+							break;	                    
+	                	}
                 }
                 arrayDeCampañas.add(campa);
                 campa = new ArrayList<String>();
